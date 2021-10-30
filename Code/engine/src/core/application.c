@@ -7,6 +7,8 @@
 #include "core/input.h"
 #include "core/clock.h"
 
+#include "renderer/renderer_frontend.h"
+
 typedef struct application_state
 {
     game* game_inst;
@@ -64,6 +66,12 @@ b8 application_create(game* game_inst)
             game_inst->app_config.start_height)){
         return FALSE;
     }
+    // Renderer startup
+    if(!renderer_initialize(game_inst->app_config.name, &app_state.platform)){
+        HFATAL("Failed to initialize renderer. Aborting application");
+        return FALSE;
+    }
+
     // Initialize the game.
     if(!app_state.game_inst->initialize(app_state.game_inst)){
         HFATAL("Game failed to initialize");
@@ -110,7 +118,10 @@ b8 application_run()
                 app_state.is_running = FALSE;
                 break;
             }
-
+            // TODO: refactor packet creation
+            renderer_packet packet;
+            packet.delta_time = delta;
+            renderer_draw_frame(&packet);
             f64 frame_end_time = platform_get_absolute_time();
             f64 frame_elapsed_time = frame_end_time - frame_start_time;
             running_time += frame_elapsed_time;
@@ -145,6 +156,9 @@ b8 application_run()
     event_unregister(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
     event_shutdown();
     input_shutdown();
+
+    renderer_shutdown();
+
     platform_shutdown(&app_state.platform);
        
     return TRUE;

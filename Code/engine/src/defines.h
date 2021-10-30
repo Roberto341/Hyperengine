@@ -82,7 +82,7 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 #error "Unknown platform!"
 #endif
 
-#ifdef KEXPORT
+#ifdef HEXPORT
 // Exports
 #ifdef _MSC_VER
 #define HAPI __declspec(dllexport)

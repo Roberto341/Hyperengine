@@ -5,6 +5,7 @@
 #include "core/hstring.h"
 #include "containers/darry.h"
 #include "platform/platform.h"
+#include "vulkan_device.h"
 // static Vulkan context
 static vulkan_context context;
 
@@ -104,8 +105,22 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
         (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(context.instance, "vkCreateDebugUtilsMessengerEXT");
         HASSERT_MSG(func, "Failed to create debug messenger!");
         VK_CHECK(func(context.instance, &debug_create_info, context.allocator, &context.debug_messenger));
-        HDEBUG("Vulkan debugger create");
+        HDEBUG("Vulkan debugger created.");
 #endif
+    
+    // Surface
+    HDEBUG("Creating Vulkan surface...");
+    if(!platform_create_vulkan_surface(plat_state, &context)){
+        HERROR("Failed to create platform surface");
+        return FALSE;
+    }
+    HDEBUG("Vulkan surface created.");
+
+    // Device creation
+    if(!vulkan_device_create(&context)){
+        HERROR("Failed to create device!");
+        return FALSE;
+    }
 
     HINFO("Vulkan renderer initalized successfully");
     return TRUE;
@@ -139,7 +154,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data) {
         switch(message_severity){
-            default:
+        default:
         case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
             HERROR(callback_data->pMessage);
             break;

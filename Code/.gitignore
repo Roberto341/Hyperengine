@@ -1,2 +1,13 @@
-code/bin/
+*.ilk
+*.pdb
+*.log
+*.idb
+*.exp
+*.iobj
+*.ipdb
+*.tlog
+*.tlog/
 
+*.sdf
+*.user
+*.suo

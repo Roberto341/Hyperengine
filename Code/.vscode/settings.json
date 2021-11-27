@@ -61,6 +61,9 @@
         "defines.h": "c",
         "darry.h": "c",
         "tuple": "c",
-        "utility": "c"
-    }
+        "utility": "c",
+        "vulkan_image.h": "c",
+        "vulkan_device.h": "c"
+    },
+    "cmake.configureOnOpen": false
 } 

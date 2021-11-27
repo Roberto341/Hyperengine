@@ -6,6 +6,7 @@
 #include "containers/darry.h"
 #include "platform/platform.h"
 #include "vulkan_device.h"
+#include "vulkan_swapchain.h"
 // static Vulkan context
 static vulkan_context context;
 
@@ -14,7 +15,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
     VkDebugUtilsMessageTypeFlagsEXT message_types,
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data);
-
+i32 find_memory_index(u32 type_filter, u32 property_flags);
 b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* application_name, struct platform_state* plat_state){
     // TODO: custom allocator.
     context.allocator = 0;
@@ -88,7 +89,7 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
     VK_CHECK(vkCreateInstance(&create_info, context.allocator, &context.instance));
     HINFO("Vulkan Instance created.");
 
-// NOTE: DEbugger
+// NOTE: Debugger
 #if defined(_DEBUG)
     HDEBUG("Creating Vulkan debugger...");
     u32 log_severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
@@ -122,10 +123,26 @@ b8 vulkan_renderer_backend_initialize(renderer_backend* backend, const char* app
         return FALSE;
     }
 
+    // Swapchain
+    vulkan_swapchain_create(
+        &context,
+        context.framebuffer_width,
+        context.framebuffer_height,
+        &context.swapchain);
+
     HINFO("Vulkan renderer initalized successfully");
     return TRUE;
 }
 void vulkan_renderer_backend_shutdown(renderer_backend* backend){
+
+    HDEBUG("Destroying Vulkan device...");
+    vulkan_device_destroy(&context);
+
+    HDEBUG("Destroying Vulkan surface...");
+    if(context.surface){
+        vkDestroySurfaceKHR(context.instance, context.surface, context.allocator);
+        context.surface = 0;
+    }
     HDEBUG("Destroying Vulkan debugger...");
     if(context.debug_messenger){
         PFN_vkDestroyDebugUtilsMessengerEXT func = 
@@ -169,4 +186,17 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vk_debug_callback(
             break;
     }
     return VK_FALSE;
+}
+
+i32 find_memory_index(u32 type_filter, u32 property_flags){
+    VkPhysicalDeviceMemoryProperties memory_properties;
+    vkGetPhysicalDeviceMemoryProperties(context.device.physical_device, &memory_properties);
+
+    for(u32 i = 0; i < memory_properties.memoryTypeCount; ++i){
+        if(type_filter & (1 << i) && (memory_properties.memoryTypes[i].propertyFlags & property_flags) == property_flags){
+            return i;
+        }
+    }
+    HWARN("Unable to find suitable memory type!");
+    return -1;
 }

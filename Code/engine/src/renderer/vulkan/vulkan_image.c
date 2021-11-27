@@ -2,8 +2,18 @@
 #include "vulkan_device.h"
 #include "core/hmemory.h"
 #include "core/logger.h"
-void vulkan_image_create(vulkan_context* context, VkImageType image_type, u32 width, u32 height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags memory_flags, b32 create_view, VkImageAspectFlags view_aspect_flags, vulkan_image* out_image)
-{
+void vulkan_image_create(
+    vulkan_context* context,
+    VkImageType image_type,
+    u32 width,
+    u32 height,
+    VkFormat format,
+    VkImageTiling tiling,
+    VkImageUsageFlags usage,
+    VkMemoryPropertyFlags memory_flags,
+    b32 create_view,
+    VkImageAspectFlags view_aspect_flags,
+    vulkan_image* out_image){
     // Copy params
     out_image->width = width;
     out_image->height = height;
@@ -29,13 +39,14 @@ void vulkan_image_create(vulkan_context* context, VkImageType image_type, u32 wi
     VkMemoryRequirements memory_requirements;
     vkGetImageMemoryRequirements(context->device.logical_device, out_image->handle, &memory_requirements);
 
+    // i32 memory_type = context->find_memory_index(memory_requirements.memoryTypeBits, memory_flags);
     i32 memory_type = context->find_memory_index(memory_requirements.memoryTypeBits, memory_flags);
     if(memory_type == -1){
         HERROR("Required memory type not found. Image not valid.");
-    }
+    } else{HERROR("Memory location is NULL") }
 
     // Alocate memory
-    VkMemoryAllocateInfo memory_allocate_info;
+    VkMemoryAllocateInfo memory_allocate_info = {VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO}; // NOTE: BUG
     memory_allocate_info.allocationSize = memory_requirements.size;
     memory_allocate_info.memoryTypeIndex = memory_type;
     VK_CHECK(vkAllocateMemory(context->device.logical_device, &memory_allocate_info, context->allocator, &out_image->memory));

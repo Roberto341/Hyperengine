@@ -63,7 +63,8 @@
         "tuple": "c",
         "utility": "c",
         "vulkan_image.h": "c",
-        "vulkan_device.h": "c"
+        "vulkan_device.h": "c",
+        "vulkan_swapchain.h": "c"
     },
     "cmake.configureOnOpen": false
 } 

@@ -8,7 +8,7 @@
     {                               \
         HASSERT(expr == VK_SUCCESS);  \
     }
-
+// Vulkan Swapchain support info
 typedef struct vulkan_swapchain_supprort_info {
     VkSurfaceCapabilitiesKHR capabilities;
     u32 format_count;
@@ -17,7 +17,7 @@ typedef struct vulkan_swapchain_supprort_info {
     VkPresentModeKHR* present_modes;
 } vulkan_swapchain_support_info;
 
-
+// Vulkan Device
 typedef struct vulkan_device{
     VkPhysicalDevice physical_device;
     VkDevice logical_device;
@@ -37,7 +37,7 @@ typedef struct vulkan_device{
     VkFormat depth_format;
 } vulkan_device;
 
-
+// Vulkan Image
 typedef struct vulkan_image{
     VkImage handle;
     VkDeviceMemory memory;
@@ -45,7 +45,38 @@ typedef struct vulkan_image{
     u32 width;
     u32 height;
 } vulkan_image;
+// Vulkan render pass state
+typedef enum vulkan_render_pass_state{
+    READY,
+    RECORDING,
+    IN_RENDER_PASS,
+    SUBMITTED,
+    NOT_ALLOCATED
+} vulkan_render_pass_state;
+// Vulkan render pass
+typedef struct vulkan_renderpass{
+    VkRenderPass handle;
+    f32 x, y, w, h;
+    f32 r, g, b, a;
+    f32 depth;
+    f32 stencil;
+} vulkan_renderpass;
+// Vulkan command buffer state
+typedef enum vulkan_command_buffer_state{
+    COMMAND_BUFFER_STATE_READY,
+    COMMAND_BUFFER_STATE_RECORDING,
+    COMMAND_BUFFER_STATE_IN_RENDER_PASS,
+    COMMAND_BUFFER_STATE_IN_RENDER_ENDED,
+    COMMAND_BUFFER_STATE_SUBMITTED,
+    COMMAND_BUFFER_STATE_NOT_ALLOCATED
+} vulkan_command_buffer_state;
+// Vulkan command buffer 
+typedef struct vulkan_command_buffer{
+    VkCommandBuffer handle;
 
+    vulkan_command_buffer_state state;
+} vulkan_command_buffer;
+// Vulkan swapchain
 typedef struct vulkan_swapchain{
     VkSurfaceFormatKHR image_format;
     u8 max_frames_in_flight;
@@ -56,6 +87,7 @@ typedef struct vulkan_swapchain{
 
     vulkan_image depth_attachment;
 } vulkan_swapchain;
+// Vulkan context
 typedef struct vulkan_context{
     VkInstance instance;
     VkAllocationCallbacks* allocator;
@@ -68,6 +100,7 @@ typedef struct vulkan_context{
     vulkan_device device;
 
     vulkan_swapchain swapchain;
+    vulkan_renderpass main_renderpass;
     u32 image_index;
     u32 current_frame;
 
